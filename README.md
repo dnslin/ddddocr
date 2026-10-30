@@ -870,9 +870,18 @@ docker-compose up -d
 DDDDOCR_OCR=true DDDDOCR_BETA=true DDDDOCR_WORKERS=4 docker-compose up -d
 ```
 
-### 目标检测 API 修复与回归测试
+### OCR 与目标检测 API 修复及回归测试
 
-`/det` 和 `/det/file` 使用位置参数向识别器传入图片，修复因 `img_bytes` 关键字与识别器签名不兼容导致的 HTTP 500。请求和响应格式不变；Docker 部署需要使用修复后的源码重新构建镜像并重建容器，仅重启旧镜像不会更新代码。
+`/ocr` 和 `/ocr/file` 使用引擎实际支持的 `color_filter_colors`、`color_filter_custom_ranges` 参数，并将请求中的自定义 HSV 范围字典转换为引擎需要的区间列表。`/det` 和 `/det/file` 使用位置参数传入图片，修复 `img_bytes` 关键字与识别器签名不一致导致的 HTTP 500。请求和响应字段保持不变。
+
+`custom_color_ranges` 的每个值为 `[下界, 上界]`，例如 `{"green": [[40, 50, 50], [80, 255, 255]]}`；这些区间直接参与过滤。`colors` 用于选择引擎内置的颜色名称。概率结果位于 `result` 中，包含 `text`、`probabilities`、`charset` 和 `confidence`。
+
+Docker 镜像直接安装当前仓库源码，不再安装 PyPI 旧包或运行外部补丁脚本。Compose 默认仅将端口发布到 `127.0.0.1:8000`，供同机反向代理使用；`DDDDOCR_PORT` 可调整宿主机端口。部署更新需要重新构建镜像并重建容器，仅重启旧镜像不会更新代码。
+
+```bash
+VCS_REF=$(git rev-parse HEAD) docker compose build
+docker compose up -d --wait --wait-timeout 90
+```
 
 在仓库根目录运行回归测试：
 
@@ -881,7 +890,7 @@ pip install ".[api]"
 python -m unittest discover -s tests -v
 ```
 
-测试启动临时本地 HTTP 服务，使用仓库自带样本和真实检测模型检查 Base64 与文件上传两种请求及检测框位置，不访问外部来源，也不需要额外测试依赖。
+测试启动临时本地 HTTP 服务，使用真实 OCR 和检测模型检查四个接口、识别文本、检测框位置、概率输出、预设/自定义 HSV 颜色过滤及无效输入。`samples/ocr_digits.png` 是绿色数字 `1234` 的固定测试图片，`samples/ocr_colors.png` 额外含红色干扰字符，用于确认颜色过滤实际生效。测试不访问外部来源，也不需要额外测试依赖。
 
 ### API 接口说明
 

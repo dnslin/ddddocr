@@ -370,8 +370,8 @@ async def ocr_recognition(
             result = ocr_instance.classification(
                 image,
                 probability=True,
-                colors=request.colors,
-                custom_color_ranges=request.custom_color_ranges
+                color_filter_colors=request.colors,
+                color_filter_custom_ranges=list(request.custom_color_ranges.values()) if request.custom_color_ranges else None
             )
             response_data = {
                 "result": result,
@@ -380,8 +380,8 @@ async def ocr_recognition(
         else:
             result = ocr_instance.classification(
                 image,
-                colors=request.colors,
-                custom_color_ranges=request.custom_color_ranges
+                color_filter_colors=request.colors,
+                color_filter_custom_ranges=list(request.custom_color_ranges.values()) if request.custom_color_ranges else None
             )
             response_data = {
                 "result": result,
@@ -462,8 +462,8 @@ async def ocr_recognition_file(
             result = ocr_instance.classification(
                 image,
                 probability=True,
-                colors=colors_list,
-                custom_color_ranges=custom_ranges
+                color_filter_colors=colors_list,
+                color_filter_custom_ranges=list(custom_ranges.values()) if custom_ranges else None
             )
             response_data = {
                 "result": result,
@@ -472,8 +472,8 @@ async def ocr_recognition_file(
         else:
             result = ocr_instance.classification(
                 image,
-                colors=colors_list,
-                custom_color_ranges=custom_ranges
+                color_filter_colors=colors_list,
+                color_filter_custom_ranges=list(custom_ranges.values()) if custom_ranges else None
             )
             response_data = {
                 "result": result,
@@ -524,7 +524,7 @@ async def object_detection(
 
     start_time = time.time()
     try:
-        result = ocr_instance.detection(img_bytes=img_data)
+        result = ocr_instance.detection(img_data)
     except (DdddOcrInputError, InvalidImageError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
@@ -574,7 +574,7 @@ async def object_detection_file(
 
     start_time = time.time()
     try:
-        result = ocr_instance.detection(img_bytes=contents)
+        result = ocr_instance.detection(contents)
     except (DdddOcrInputError, InvalidImageError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:

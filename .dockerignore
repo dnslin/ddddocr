@@ -68,6 +68,7 @@ docker-compose.yml
 # 文档
 docs/
 *.md
+!README.md
 
 # 特定排除（自定义模型或测试数据）
 custom_models/

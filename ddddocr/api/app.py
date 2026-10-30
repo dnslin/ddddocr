@@ -524,7 +524,7 @@ async def object_detection(
 
     start_time = time.time()
     try:
-        result = ocr_instance.detection(img_bytes=img_data)
+        result = ocr_instance.detection(img_data)
     except (DdddOcrInputError, InvalidImageError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
@@ -574,7 +574,7 @@ async def object_detection_file(
 
     start_time = time.time()
     try:
-        result = ocr_instance.detection(img_bytes=contents)
+        result = ocr_instance.detection(contents)
     except (DdddOcrInputError, InvalidImageError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:

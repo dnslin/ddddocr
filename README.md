@@ -870,6 +870,19 @@ docker-compose up -d
 DDDDOCR_OCR=true DDDDOCR_BETA=true DDDDOCR_WORKERS=4 docker-compose up -d
 ```
 
+### 目标检测 API 修复与回归测试
+
+`/det` 和 `/det/file` 使用位置参数向识别器传入图片，修复因 `img_bytes` 关键字与识别器签名不兼容导致的 HTTP 500。请求和响应格式不变；Docker 部署需要使用修复后的源码重新构建镜像并重建容器，仅重启旧镜像不会更新代码。
+
+在仓库根目录运行回归测试：
+
+```bash
+pip install ".[api]"
+python -m unittest discover -s tests -v
+```
+
+测试启动临时本地 HTTP 服务，使用仓库自带样本和真实检测模型检查 Base64 与文件上传两种请求及检测框位置，不访问外部来源，也不需要额外测试依赖。
+
 ### API 接口说明
 
 API 服务提供了以下接口：
